@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 GATESFILE = open('gates.txt', 'r')
-# print GATESFILE.read()
+NETLISTS = 0
 
 class Position(object):
     def __init__(self, x, y):
@@ -108,11 +108,12 @@ class Nets(object):
         self.grid = grid
 
         # read in files with net connections
-        nets_file = open('netlists.txt', 'r')
-        for line in nets_file.readlines():
-            linearray = line.split(' ')
-            arraylength = len(linearray)
-            print("Array length: " + str(arraylength))
+        exec(open('netlists.py').read(), globals())
+        # for i in range(0, NETLISTS):
+        #
+        # TO DO: manier om netlists in een array te zetten ipv variabele namen
+
+
 
 
 # checks!
