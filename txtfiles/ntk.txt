@@ -1,0 +1,8 @@
+Chips & circuits
+
+Toestandsruimte > hoe complex het probleem is wordt bepaald door de grootte van de chip ((1) grid), (2)aantal gates, en het (3) aantal nets.
+
+
+Upperbound
+
+Lowerbound
