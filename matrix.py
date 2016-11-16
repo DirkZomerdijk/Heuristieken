@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 GATESFILE = open('gates.txt', 'r')
-NETLISTS = 0
+NETLISTS = open('nets.txt', 'r')
 
 class Position(object):
     def __init__(self, x, y):
@@ -25,32 +25,65 @@ class Grid(object):
         self.crossings = np.zeros(shape=(width, height))
         # print self.crossings
 
-    def markCrossingOccupied(self, pos):
+    def markCoordinateOccupied(self, pos):
         """
-        Marks crossing at position as occupied
+        Marks coordinate at position as occupied
 
         pos: a Position object
         """
         self.crossings[int(pos.x)][int(pos.y)] = 1
         # print self.crossings
 
-    def isPositionOnGrid(self, pos):
+    def markAsGate(self, pos):
         """
-        Return True if pos is on the grid.
+        Marks coordinate at position as occupied
+
+        pos: a Position object
+        """
+        self.crossings[int(pos.x)][int(pos.y)] = 2
+        # print self.crossings
+
+    def markCoordinateFree(self, pos):
+        """
+        Marks coordinate at position as free
+
+        pos: a Position object
+        """
+        self.crossings[int(pos.x)][int(pos.y)] = 0
+
+    def isCoordinateOccupied(self, pos):
+        """
+        Returns whether the grid is occupied at a certain position.
 
         pos: a Position object.
-        returns: True if pos is in the room, False otherwise.
+        returns: True if pos is on the grid, False otherwise.
+        """
+        return self.crossings[int(pos.x)][int(pos.y)] != 0
+
+
+    def isPositionOnGrid(self, pos):
+        """
+        Returns True if pos is on the grid.
+
+        pos: a Position object.
+        returns: True if pos is on the grid, False otherwise.
         """
         return (pos.x >= 0) and (pos.x <= self.width) and (pos.y >= 0) and (pos.y <= self.height)
 
     def printGrid(self):
+        """
+        Prints the entire grid.
+
+        returns: nothing
+        """
         print self.crossings
 
 class Gates(object):
     def __init__(self, grid, GATESFILE):
         """
         GATESFILE holds coordinates for all gates on the grid
-        grid = a Grid object
+
+        grid: a Grid object
         """
         self.grid = grid
         self.gates = GATESFILE.readlines()
@@ -61,9 +94,9 @@ class Gates(object):
     def readGates(self):
         """
         Loads GATESFILE with gate coordinates separated by ','
-        Marks gates on the grid as '1'
+        Marks gates on the grid as '2'
 
-        Return nothing (right??)
+        returns: nothing
         """
         # iterate over lines
         lines = 0
@@ -80,21 +113,27 @@ class Gates(object):
 
             # mark gates as occupied
             coordinate = Position(self.x, self.y)
-            self.grid.markCrossingOccupied(coordinate)
+            self.grid.markAsGate(coordinate)
 
             # return self.gates_coordinates
         #@ gate self.matrix = 1
         # print self.gates_coordinates
-    #def connections
+
     def getCoordinate(self, gate):
         """
-        takes integer for gate number, and returns grid position object
+        Returns position of a certain gate number.
+
+        gate: integer for gate number
+        returns: grid position object
         """
         return Position(self.gates_coordinates[gate-1][0], self.gates_coordinates[gate-1][1])
 
     def getGate(self, pos):
         """
-        takes position object, and returns gate value (integer)
+        Returns the gate number of a certain position.
+
+        pos: a Position object
+        returns: gate number (integer)
         """
         # print self.gates_coordinates
         gate_value = 1
@@ -109,13 +148,67 @@ class Gates(object):
 
     #def complete
 
-def nets(n):
-    """
-    function that returns gates, and takes integer n to determine array index
-    """
-    # read in files with net connections
-    exec (open('netlists.py').read(), globals())
-    return netlist_1[n]
+class Nets(object):
+    def __init__(self, grid, NETSFILE):
+        """
+        grid: a Grid object
+        NETSFILE: holds coordinates for all gates on the grid
+        """
+        self.grid = grid
+        self.open_nets = [None] * 0
+        self.closed_nets = [None] * 0
+        self.nets_coordinates = {}
+        self.open_nets.append(NETSFILE.readlines())
+        self.length = [None] * 0
+
+    def saveNet(self, net, coordinates):
+        """
+        Saves net coordinates to dictionary of nets.
+        Adds net to list of closed nets and removes net from list of open nets.
+
+        net: the two gate numbers between which the net has been placed.
+        coordinates: the coordinates over which the net runs (gates excluded).
+        """
+        for coordinate in coordinates:
+            self.nets_coordinates[net] = coordinate
+
+        self.closed_nets.append(net)
+        self.open_nets.pop(net)
+
+    def getNet(self, net):
+        """
+        Returns the coordinates over which the net runs.
+
+        net: the two gate numbers between which the net has been placed.
+        returns: array of coordinates
+        """
+        return self.nets_coordinates[net]
+
+    def removeNet(self):
+        """
+        Removes a net by setting all its coordinates (apart from gates) on the grid to unoccupied.
+
+        input:
+        """
+        #TO DO
+
+    def netLength(self):
+        """
+        Returns a list of net lengths.
+
+        input:
+        returns:
+        """
+        return self.length
+
+
+# def nets(n):
+#     """
+#     function that returns gates, and takes integer n to determine array index
+#     """
+#     # read in files with net connections
+#     exec (open('netlists.py').read(), globals())
+#     return netlist_1[n]
 
 
 
@@ -205,7 +298,7 @@ def next_move(start, target, grid):
     print len(path) - 1
     for node in path:
         x, y = node.point
-        Grid.markCrossingOccupied(grid, Position(x, y))
+        Grid.markCoordinateOccupied(grid, Position(x, y))
         print x, y
 
 # checks!
@@ -229,17 +322,18 @@ p = gate.getCoordinate(5)
     # call next_move function for every net coordinate
 n = 0
 
-# print nets(1)[0]
-start_gate = Gates.getCoordinate(gate, nets(n)[0])  # is position object with start coordinates
-start_x, start_y = [Position.getX(start_gate), Position.getY(start_gate)]
-end_gate = Gates.getCoordinate(gate, nets(n)[1])  # position object with target coordinates
-target_x, target_y = [Position.getX(end_gate), Position.getY(end_gate)]
+# # print nets(1)[0]
+# start_gate = Gates.getCoordinate(gate, nets(n)[0])  # is position object with start coordinates
+# start_x, start_y = [Position.getX(start_gate), Position.getY(start_gate)]
+# end_gate = Gates.getCoordinate(gate, nets(n)[1])  # position object with target coordinates
+# target_x, target_y = [Position.getX(end_gate), Position.getY(end_gate)]
 
 # print nets(n)[0]
 # print start.x
 # print start.y
 
-next_move((start_x, start_y), (target_x, target_y), grid)
+
+# next_move((start_x, start_y), (target_x, target_y), grid)
 
 
 
