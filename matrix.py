@@ -170,7 +170,7 @@ class Nets(object):
         coordinates: the coordinates over which the net runs (gates excluded).
         """
         for coordinate in coordinates:
-            self.nets_coordinates[net] = coordinate
+            self.nets_coordinates.update({net : coordinate}) 
 
         self.closed_nets.append(net)
         self.open_nets.pop(net)
@@ -182,15 +182,21 @@ class Nets(object):
         net: the two gate numbers between which the net has been placed.
         returns: array of coordinates
         """
-        return self.nets_coordinates[net]
+        return self.nets_coordinates.get(net)
 
-    def removeNet(self):
+    def removeNet(self, net):
         """
         Removes a net by setting all its coordinates (apart from gates) on the grid to unoccupied.
 
         input:
         """
-        #TO DO
+
+        net_coordinates = getNet(net)
+        for coordinate in net_coordinates
+            Grid.markCoordinateFree(grid,coordinate)
+
+        self.closed_nets.pop(net)
+        self.open_nets.append(net)
 
     def netLength(self):
         """
