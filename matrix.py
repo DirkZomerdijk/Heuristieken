@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 GATESFILE = open('gates.txt', 'r')
-NETLISTS = open('nets.txt', 'r')
+NETLISTS = open('txtfiles/netlists.txt', 'r')
 
 class Position(object):
     def __init__(self, x, y):
@@ -22,8 +22,14 @@ class Grid(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.crossings = np.zeros(shape=(width, height))
+        self.crossings = {}
+        for i in range(0, width):
+            for j in range(0, height):
+                self.crossings[i, j] = 'free'
         # print self.crossings
+    #
+    # def __getitem__(self, x, y):
+    #     return self.crossings[x, y]
 
     def markCoordinateOccupied(self, pos):
         """
@@ -170,7 +176,7 @@ class Nets(object):
         coordinates: the coordinates over which the net runs (gates excluded).
         """
         for coordinate in coordinates:
-            self.nets_coordinates.update({net : coordinate}) 
+            self.nets_coordinates.update({net: coordinate})
 
         self.closed_nets.append(net)
         self.open_nets.pop(net)
@@ -191,9 +197,9 @@ class Nets(object):
         input:
         """
 
-        net_coordinates = getNet(net)
-        for coordinate in net_coordinates
-            Grid.markCoordinateFree(grid,coordinate)
+        net_coordinates = self.getNet(net)
+        for coordinate in net_coordinates:
+            Grid.markCoordinateFree(grid, coordinate)
 
         self.closed_nets.pop(net)
         self.open_nets.append(net)
@@ -206,18 +212,6 @@ class Nets(object):
         returns:
         """
         return self.length
-
-
-# def nets(n):
-#     """
-#     function that returns gates, and takes integer n to determine array index
-#     """
-#     # read in files with net connections
-#     exec (open('netlists.py').read(), globals())
-#     return netlist_1[n]
-
-
-
 
 
 # SEARCH ALGORITHM
@@ -233,29 +227,53 @@ class Node:
     def move_cost(self, other):
         return 0 if self.value == '.' else 1
 
-
 def children(point, grid):
     x, y = point.point
-    links = [grid[d[0]][d[1]] for d in [(x - 1, y), (x, y - 1), (x, y + 1), (x + 1, y)]]
-    return [link for link in links if link.value != '%']
+    # print grid.crossings
+    links = [grid.crossings[d[0]][d[1]] for d in [(x - 1, y), (x, y - 1), (x, y + 1), (x + 1, y)]]
+    print links
+    return [link for link in links if (link.value != '1') | (link.value != '2')]
 
 # function that calculates H score, or the distance between a node and the target.
 def manhattan(point, point2):
     return abs(point.point[0] - point2.point[0]) + abs(point.point[1] - point2.point[0])
 
 
-def aStar(start, goal, grid):
+def aStar(net, grid):
+    '''
+
+    :param net: start and goal of netlist
+    :param grid: grid object
+    :return:
+    '''
+    # get coordinates of gatenumbers
+    start_pos = Gates.getCoordinate(gate, net[0])
+    goal_pos = Gates.getCoordinate(gate, net[1])
+    start = Node('2',(start_pos.getX(), start_pos.getY()))
+    goal = Node('2',(goal_pos.getX(), goal_pos.getY()))
+    # # print goal
+    # Node(1, start)
+    # Node(2, goal)
+    # print Node.move_cost(Node(1, start), goal)
+
     # The open and closed sets
     openset = set()
     closedset = set()
+
     # Current point is the starting point
     current = start
+    # print current
+
     # Add the starting point to the open set
     openset.add(current)
+    # print openset
+
     # While the open set is not empty
     while openset:
         # Find the item in the open set with the lowest G + H score
-        current = min(openset, key=lambda o: o.G + o.H)
+        current = min(openset, key=lambda x: x.G + x.H)
+        # print current.G
+
         # If it is the item we want, retrace the path and return it
         if current == goal:
             path = []
@@ -270,6 +288,7 @@ def aStar(start, goal, grid):
         closedset.add(current)
         # Loop through the node's children/siblings
         for node in children(current, grid):
+            print node
             # If it is already in the closed set, skip it
             if node in closedset:
                 continue
@@ -308,12 +327,21 @@ def next_move(start, target, grid):
         print x, y
 
 # checks!
-grid = Grid(13, 18)
+width = 13
+height = 18
+grid = Grid(width, height)
 gate = Gates(grid, GATESFILE)
 gate.readGates()
 coordinate = Position(2, 3)
 c = gate.getGate(coordinate)
 p = gate.getCoordinate(5)
+
+# grid.printGrid()
+grid.markCoordinateOccupied(coordinate)
+grid.markCoordinateOccupied(Position(1,1))
+grid.printGrid()
+
+aStar([3,4], grid)
 
 # print nets(1)
 # print Grid.printGrid(grid)
