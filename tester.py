@@ -1,5 +1,9 @@
 # Creates matrix with plotted net points
 
+from visualizer import *
+from search import *
+from astar import *
+
 GATESFILE = open('gates.txt', 'r')
 NETLISTS = open('txtfiles/netlist1.txt', 'r')
 
@@ -7,19 +11,22 @@ class Layer(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self._grid = {}
+        self.grid = {}
         for x in range(0, width):
             for y in range(0, height):
-                self._grid[x, y] = 'free'
+                self.grid[x, y] = 'free'
     
     def place(self, item, x, y):
-        self._grid[x, y] = item
+        self.grid[x, y] = item
+
+    def remove(self, x, y):
+        self.grid[x, y] = 'free'
 
     def __str__(self):
         string = ''
         for i in range(self.width):
             for j in range(self.height):
-               string += str(self._grid[i, j]) + ' '
+               string += str(self.grid[i, j]) + ' '
             string += '\n'
         return string
 
@@ -54,6 +61,9 @@ class Nets(object):
         self.end = end
         self.path = path
         self.netline = []
+        self.value = '[--]'
+
+        self.makeNet()
 
     def makeNet(self):
         """
@@ -65,22 +75,25 @@ class Nets(object):
             self.netline.append(point)
         self.netline.append((self.end.x, self.end.y, 0))
 
-        print self.netline
+
+    def __str__(self):
+        return self.value
 
 # create Chip function
 class Chip(object):
-    def __init__(self, width, height, GATESFILE, NETLISTS):
+    def __init__(self, width, height, layer, GATESFILE, NETLISTS):
         '''
         :param layer: Layer object
         :param GATESFILE: file containing all gates
         '''
         self.width = width
         self.height = height
-        self.gatesfile = [[int(n) for n in line.replace('\n', '').split(',')] for line in GATESFILE.readlines()]
-        self.gates = [Gate((x, y)) for x, y in self.gatesfile]
-        self.layers = [Layer(self.width, self.height) for i in range(7)]
+        self.layer = layer
+        self._gatesfile = [[int(n) for n in line.replace('\n', '').split(',')] for line in GATESFILE.readlines()]
+        self.gates = [Gate((x, y)) for x, y in self._gatesfile]
+        self.layers = [Layer(self.width, self.height) for i in range(self.layer)]
         self.netlist = [[int(n) for n in line.split(',')] for line in NETLISTS.readlines()]
-        self.nets = {}
+        self.nets = []
 
         self._loadGates()
 
@@ -91,33 +104,52 @@ class Chip(object):
         :return:
         '''
         count = 0
-        for x, y in self.gatesfile:
+        for x, y in self._gatesfile:
             count += 1
             self.layers[0].place(Gate((x, y)), x, y)
+
+    def placeNet(self, start, end, path):
+        '''
+        places a net on layer objects
+        net: is an array with coordinates
+        :return:
+        '''
+
+        net_pointer = Nets(start, end, path)
+        for x, y, z in path:
+            self.layers[z].place(net_pointer, x, y)
+        self.nets.append(net_pointer)
+
+    def removeNet(self, pointer):
+        '''
+
+        :param pointer: a pointer to a Nets object to be removed
+        :return: nothing
+        '''
+
+        for x, y, z in pointer.path:
+            self.layers[z].place('free', x, y)
+
+        for i in range(len(self.nets)):
+            if self.nets[i] == pointer:
+                self.nets.pop(i)
+        # should be even easier, with pointer.removeNet()
 
     def printChip(self):
         for layer in self.layers:
             print layer
-    #
-    # def placeNet(self):
 
 
+def Run(width, height, layer):
+    chip = Chip(width, height, layer, GATESFILE, NETLISTS)
+
+    for start, end in chip.netlist:
+        Search(chip, chip.gates[start], chip.gates[end])
+
+    # array = [(1, 1, 1), (1, 2, 1), (1, 3, 1), (1, 3, 2), (1, 4, 2), (1, 4, 1), (1, 5, 1), (1, 5, 0)]
+    # chip.placeNet(chip.gates[0], chip.gates[1], array)
+
+    Visualizer(chip).start()
 
 
-width = 13
-height = 18
-chip = Chip(width, height, GATESFILE, NETLISTS)
-layer = Layer(width,height)
-# PRINT!
-chip.printChip()
-# print chip.gates[0]
-
-# def runClasses(width, height, file):
-
-array = [(1,2,7), (2,4,7),(2,1,3)]
-start = Gate((2,3))
-end = Gate((5,5))
-test = Nets(chip.gates[1], chip.gates[4], array)
-# print chip.layers[0]
-Nets.makeNet(test)
-# print chip.gates[7].coordinate
+Run(13, 18, 7)
