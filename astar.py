@@ -1,37 +1,52 @@
 # A* algorithm
 
 # from tester import *
-
+import math
 
 class Node:
-    def __init__(self, value, point):
+    def __init__(self, value, coordinate):
         self.value = value
-        self.point = point
+        self.coordinate = coordinate
         self.parent = None
-        self.H = 0
         self.G = 0
-
-    def move_cost(self, other):
-        return 1
+        self.H = 0
 
     def __str__(self):
         return '[..]'
 
 
-def children(point, chip):
-    x, y, z = point.point
-    links = [chip.layers[z].grid[d] for d in [(x - 1, y), (x, y - 1), (x, y + 1), (x + 1, y)] if chip.layers[z].grid[d]]
-    links.append(chip.layers[z - 1].grid[x, y])
-    links.append(chip.layers[z + 1].grid[x, y])
+def makeChildren(node, chip, end):
+    x, y, z = node.coordinate
+    children = []
 
-    # this does return gates!!!
-    return [link for link in links if (link.value != '[--]')]
+    options = [[x - 1, y, z], [x + 1, y, z], [x, y - 1, z], [x, y + 1, z], [x, y, z - 1], [x, y, z + 1]]
+    parameters = [chip.width, chip.height, chip.layer]
+
+    for i in range(6):
+        j = int(math.floor(i / 2))
+        if options[i][j] in range(parameters[j]) and (chip.layers[options[i][2]].grid[options[i][0], options[i][1]] == 'free' or options[i] == end.coordinate):
+            children.append(Node('[..]', options[i]))
+            # print options[i]
+
+    # if x - 1 in range(chip.width) and chip.layers[z].grid[(x - 1), y] == 'free':
+    #     children.append(Node('[..]', ((x - 1), y, z)))
+    # if x + 1 in range(chip.width) and chip.layers[z].grid[(x + 1), y] == 'free':
+    #     children.append(Node('[..]', ((x + 1), y, z)))
+    # if y - 1 in range(chip.height) and chip.layers[z].grid[x, (y - 1)] == 'free':
+    #     children.append(Node('[..]', (x, (y - 1), z)))
+    # if y + 1 in range(chip.height) and chip.layers[z].grid[x, (y + 1)] == 'free':
+    #     children.append(Node('[..]', (x, (y + 1), z)))
+    # if z - 1 in range(chip.layer) and chip.layers[z - 1].grid[x, y] == 'free':
+    #     children.append(Node('[..]', (x, y, (z - 1))))
+    # if z + 1 in range(chip.layer) and chip.layers[z + 1].grid[x, y] == 'free':
+    #     children.append(Node('[..]', (x, y, (z + 1))))
+
+    return children
 
 
-# function that calculates H score, or the distance between a node and the target.
-def manhattan(point, point2):
-    return abs(point.point[0] - point2.point[0]) + abs(point.point[1] - point2.point[0]) \
-           + abs(point.point[2] - point2.point[0])
+def manhattan(node, end):
+    return abs(node.coordinate[0] - end.coordinate[0]) + abs(node.coordinate[1] - end.coordinate[1]) \
+           + abs(node.coordinate[2] - end.coordinate[2])
 
 
 def astar(chip, start, end):
@@ -42,9 +57,11 @@ def astar(chip, start, end):
     :param end: Gate object
     :return:
     '''
-    start_coordinate = Node(start.value, (start.x, start.y, 0))
-    end_coordinate = Node(end.value, (end.x, end.y, 0))
-    current = start_coordinate
+    start.G = 0
+    start.H = 0
+    start.parent = None
+    current = start
+    print end.coordinate
 
     openset = set()
     closedset = set()
@@ -52,13 +69,14 @@ def astar(chip, start, end):
     openset.add(current)
 
     while openset:
-        # find Node with lowest g + h score
+        # find Node with lowest g score
         current = min(openset, key=lambda x: x.G + x.H)
 
         # check if we found our end gate
-        if current == end_coordinate:
+        if current.coordinate == end.coordinate:
+            print 'path found'
             path = []
-            while current.parent:
+            while current.parent != start:
                 path.append(current)
                 current = current.parent
             path.append(current)
@@ -67,13 +85,15 @@ def astar(chip, start, end):
         openset.remove(current)
         closedset.add(current)
 
-        for node in children(current, chip):
+        for node in makeChildren(current, chip, end):
+            # print 'checking children'
             # If it is already in the closed set, skip it
             if node in closedset:
                 continue
 
             # Otherwise if it is already in the open set
             if node in openset:
+                print 'node in openset'
 
                 # Check if we beat the G score
                 new_g = current.G + current.move_cost(node)
@@ -85,8 +105,8 @@ def astar(chip, start, end):
 
             else:
                 # If it isn't in the open set, calculate the G and H score for the node
-                node.G = current.G + current.move_cost(node)
-                node.H = manhattan(node, end_coordinate)
+                node.G = current.G + 1
+                node.H = manhattan(node, end)
 
                 # Set the parent to our current item
                 node.parent = current
@@ -94,5 +114,5 @@ def astar(chip, start, end):
                 # Add it to the set
                 openset.add(node)
 
-        # Throw an exception if there is no path
-        raise ValueError('No Path Found')
+    # Throw an exception if there is no path
+    raise ValueError('No Path Found')

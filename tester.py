@@ -38,9 +38,10 @@ class Gate(object):
         layer = layer object, met z = 0
         coordinate = (x,y)
         """
-        self.coordinate = coordinate
+        self.coordinate = [coordinate[0], coordinate[1], 0]
         self.x = coordinate[0]
         self.y = coordinate[1]
+        self.z = 0
         self.connections = []
         self.value = '[  ]'
 
@@ -155,22 +156,16 @@ def Runsearch(width, height, layer):
 def Runastar(width, height, layer):
     chip = Chip(width, height, layer, GATESFILE, NETLISTS)
 
-    # convert all points on grid to nodes
-    for layers in chip.layers:
-        for x, y in layers.grid:
-            if layers.grid[x, y] == 'free':
-                layers.grid[x, y] = Node('[..]', (x, y, layers.layer_num))
-
-    chip.printChip()
-
     # search path
     for start, end in chip.netlist:
         path = astar(chip, chip.gates[start], chip.gates[end])
         net = []
         for node in path:
-            net.append(node.point)
+            net.append(node.coordinate)
         chip.placeNet(chip.gates[start], chip.gates[end], net)
         Visualizer(chip).start()
 
-Runsearch(13, 18, 7)
-# Runastar(13, 18, 7)
+    print 'Finished'
+
+# Runsearch(13, 18, 7)
+Runastar(13, 18, 7)
