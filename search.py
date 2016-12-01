@@ -37,5 +37,5 @@ def Search(chip, start, end):
         elif current[1] < end_coordinate[1]:
             current[1] += 1
 
-        path.append([current[0], current[1], current[2]])
+        path.append((current[0], current[1], current[2]))
     chip.placeNet(start, end, path[:-1])

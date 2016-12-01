@@ -8,14 +8,15 @@ GATESFILE = open('gates.txt', 'r')
 NETLISTS = open('txtfiles/netlist1.txt', 'r')
 
 class Layer(object):
-    def __init__(self, width, height):
+    def __init__(self, width, height, layer_num):
         self.width = width
         self.height = height
+        self.layer_num = layer_num
         self.grid = {}
         for x in range(0, width):
             for y in range(0, height):
                 self.grid[x, y] = 'free'
-    
+
     def place(self, item, x, y):
         self.grid[x, y] = item
 
@@ -91,7 +92,7 @@ class Chip(object):
         self.layer = layer
         self._gatesfile = [[int(n) for n in line.replace('\n', '').split(',')] for line in GATESFILE.readlines()]
         self.gates = [Gate((x, y)) for x, y in self._gatesfile]
-        self.layers = [Layer(self.width, self.height) for i in range(self.layer)]
+        self.layers = [Layer(self.width, self.height, i) for i in range(self.layer)]
         self.netlist = [[int(n) for n in line.split(',')] for line in NETLISTS.readlines()]
         self.nets = []
 
@@ -140,7 +141,7 @@ class Chip(object):
             print layer
 
 
-def Run(width, height, layer):
+def Runsearch(width, height, layer):
     chip = Chip(width, height, layer, GATESFILE, NETLISTS)
 
     for start, end in chip.netlist:
@@ -151,5 +152,25 @@ def Run(width, height, layer):
 
     Visualizer(chip).start()
 
+def Runastar(width, height, layer):
+    chip = Chip(width, height, layer, GATESFILE, NETLISTS)
 
-Run(13, 18, 7)
+    # convert all points on grid to nodes
+    for layers in chip.layers:
+        for x, y in layers.grid:
+            if layers.grid[x, y] == 'free':
+                layers.grid[x, y] = Node('[..]', (x, y, layers.layer_num))
+
+    chip.printChip()
+
+    # search path
+    for start, end in chip.netlist:
+        path = astar(chip, chip.gates[start], chip.gates[end])
+        net = []
+        for node in path:
+            net.append(node.point)
+        chip.placeNet(chip.gates[start], chip.gates[end], net)
+        Visualizer(chip).start()
+
+Runsearch(13, 18, 7)
+# Runastar(13, 18, 7)
