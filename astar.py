@@ -24,22 +24,9 @@ def makeChildren(node, chip, end):
 
     for i in range(6):
         j = int(math.floor(i / 2))
-        if options[i][j] in range(parameters[j]) and (chip.layers[options[i][2]].grid[options[i][0], options[i][1]] == 'free' or options[i] == end.coordinate):
-            children.append(Node('[..]', options[i]))
-            # print options[i]
-
-    # if x - 1 in range(chip.width) and chip.layers[z].grid[(x - 1), y] == 'free':
-    #     children.append(Node('[..]', ((x - 1), y, z)))
-    # if x + 1 in range(chip.width) and chip.layers[z].grid[(x + 1), y] == 'free':
-    #     children.append(Node('[..]', ((x + 1), y, z)))
-    # if y - 1 in range(chip.height) and chip.layers[z].grid[x, (y - 1)] == 'free':
-    #     children.append(Node('[..]', (x, (y - 1), z)))
-    # if y + 1 in range(chip.height) and chip.layers[z].grid[x, (y + 1)] == 'free':
-    #     children.append(Node('[..]', (x, (y + 1), z)))
-    # if z - 1 in range(chip.layer) and chip.layers[z - 1].grid[x, y] == 'free':
-    #     children.append(Node('[..]', (x, y, (z - 1))))
-    # if z + 1 in range(chip.layer) and chip.layers[z + 1].grid[x, y] == 'free':
-    #     children.append(Node('[..]', (x, y, (z + 1))))
+        if options[i][j] in range(parameters[j]) and (chip.layers[options[i][2]].grid[options[i][0],
+                options[i][1]] == 'free' or options[i] == end.coordinate):
+            children.append(Node('[--]', options[i]))
 
     return children
 
@@ -86,7 +73,6 @@ def astar(chip, start, end):
         closedset.add(current)
 
         for node in makeChildren(current, chip, end):
-            # print 'checking children'
             # If it is already in the closed set, skip it
             if node in closedset:
                 continue
@@ -96,7 +82,7 @@ def astar(chip, start, end):
                 print 'node in openset'
 
                 # Check if we beat the G score
-                new_g = current.G + current.move_cost(node)
+                new_g = current.G + 1
 
                 if node.G > new_g:
                     # If so, update the node to have a new parent
@@ -104,9 +90,9 @@ def astar(chip, start, end):
                     node.parent = current
 
             else:
-                # If it isn't in the open set, calculate the G and H score for the node
-                node.G = current.G + 1
+                # If it isn't in the open set, calculate the H and G score for the node
                 node.H = manhattan(node, end)
+                node.G = current.G + 1
 
                 # Set the parent to our current item
                 node.parent = current

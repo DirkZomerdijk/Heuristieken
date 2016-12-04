@@ -1,8 +1,9 @@
 # Creates matrix with plotted net points
 
-from visualizer import *
-from search import *
 from astar import *
+# from astar2 import *
+from collections import defaultdict
+import random
 
 GATESFILE = open('gates.txt', 'r')
 NETLISTS = open('txtfiles/netlist1.txt', 'r')
@@ -43,7 +44,7 @@ class Gate(object):
         self.y = coordinate[1]
         self.z = 0
         self.connections = []
-        self.value = '[  ]'
+        self.value = 'gate'
 
     def addConnection(self, connection):
         self.connections.append(connection)
@@ -63,7 +64,7 @@ class Nets(object):
         self.end = end
         self.path = path
         self.netline = []
-        self.value = '[--]'
+        self.value = 'net'
 
         self.makeNet()
 
@@ -131,10 +132,14 @@ class Chip(object):
 
         for x, y, z in pointer.path:
             self.layers[z].place('free', x, y)
+        #
+        # for i in range(len(self.nets)):
+        #     if self.nets[i] == pointer:
+        #         self.nets.pop(i)
 
-        for i in range(len(self.nets)):
-            if self.nets[i] == pointer:
-                self.nets.pop(i)
+        for net in self.nets:
+            if net == pointer:
+                self.nets.remove(net)
         # should be even easier, with pointer.removeNet()
 
     def printChip(self):
@@ -142,30 +147,52 @@ class Chip(object):
             print layer
 
 
-def Runsearch(width, height, layer):
-    chip = Chip(width, height, layer, GATESFILE, NETLISTS)
-
+def sortNetlist(chip):
+    '''
+    takes chip and returns netlist sorted by distance between gates.
+    :param chip: chip object
+    '''
+    x = defaultdict(list)
     for start, end in chip.netlist:
-        Search(chip, chip.gates[start], chip.gates[end])
+        length = manhattan(chip.gates[start], chip.gates[end])
+        x[length].append((start, end))
+    return x
 
-    # array = [(1, 1, 1), (1, 2, 1), (1, 3, 1), (1, 3, 2), (1, 4, 2), (1, 4, 1), (1, 5, 1), (1, 5, 0)]
-    # chip.placeNet(chip.gates[0], chip.gates[1], array)
+def removeRandomNets(chip, amount):
+    '''
+    function removes random nets from the chip.
+    :param chip: Chip object
+    :param amount: amount of nets to be removed
+    :return: list with start and end gates to be placed (again) on the chip, and the length of the removed nets
+    '''
+    temp = []
+    removed = []
+    netlength = 0
 
-    Visualizer(chip).start()
+    # get random nets and remove them from the chip
+    for i in range(amount):
+        # get random net
+        remove = random.choice(chip.nets)
+        netlength += len(remove.path)
 
-def Runastar(width, height, layer):
-    chip = Chip(width, height, layer, GATESFILE, NETLISTS)
+        temp.append((remove.start, remove.end))
 
-    # search path
-    for start, end in chip.netlist:
-        path = astar(chip, chip.gates[start], chip.gates[end])
-        net = []
-        for node in path:
-            net.append(node.coordinate)
-        chip.placeNet(chip.gates[start], chip.gates[end], net)
-        Visualizer(chip).start()
+        # remove net
+        chip.removeNet(remove)
 
-    print 'Finished'
+    for start, end in temp:
+        startco = 0
+        endco = 0
+        # get gate numbers corresponding to net start and end coordinates
+        for i in range(len(chip.gates)):
+            # get start gate number
+            if start.coordinate == chip.gates[i].coordinate:
+                startco = i
 
-# Runsearch(13, 18, 7)
-Runastar(13, 18, 7)
+            # get end gate number
+            if end.coordinate == chip.gates[i].coordinate:
+                endco = i
+
+        removed.append((startco, endco))
+
+    return removed, netlength
