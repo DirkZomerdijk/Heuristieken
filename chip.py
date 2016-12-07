@@ -5,7 +5,7 @@ from astar import *
 from collections import defaultdict
 import random
 
-GATESFILE = open('gates.txt', 'r')
+GATESFILE = open('txtfiles/print1.txt', 'r')
 NETLISTS = open('txtfiles/netlist1.txt', 'r')
 
 class Layer(object):
@@ -156,7 +156,20 @@ def sortNetlist(chip):
     for start, end in chip.netlist:
         length = manhattan(chip.gates[start], chip.gates[end])
         x[length].append((start, end))
-    return x
+    return sorted(x.values())
+
+
+def sortOnConnections(chip):
+    x = defaultdict(list)
+    for start, end in chip.netlist:
+        connections = 0
+        for netcombination in chip.netlist:
+            if start == netcombination[0] or start == netcombination[1]:
+                connections += 1
+
+        x[connections].append((start, end))
+
+    return sorted(x.values(), reverse=True)
 
 def removeRandomNets(chip, amount):
     '''
@@ -196,3 +209,4 @@ def removeRandomNets(chip, amount):
         removed.append((startco, endco))
 
     return removed, netlength
+

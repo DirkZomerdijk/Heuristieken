@@ -1,6 +1,6 @@
 # A* algorithm
 
-# from tester import *
+# from chip import *
 import math
 
 class Node:

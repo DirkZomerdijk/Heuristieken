@@ -1,6 +1,6 @@
 # A* algorithm
 
-from tester import *
+from chip import *
 import math
 
 class Node:
@@ -75,7 +75,7 @@ def astar2(chip, start, end):
 
         # check if we found our end gate
         if current.coordinate == end.coordinate:
-            print 'path found'
+            # print 'path found'
             path = []
             while current.parent:
                 path.append(current)
@@ -118,7 +118,7 @@ def astar2(chip, start, end):
                     # check if node is next to a gate
                     for gate in gates_surrounding:
                         if gate == node.coordinate:
-                            node.G += 2
+                            node.G += 3
 
                     # Set the parent to our current item
                     node.parent = current
