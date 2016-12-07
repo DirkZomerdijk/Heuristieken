@@ -114,19 +114,31 @@ def makeShorter(chip, net_length):
     paths = {}
     paths[net_length] = chip
     lengths= []
+
+    # for set amount of times, relay nets
     for runs in range(50):
         new_length = 0
+
+        # for each net in net list
         for net in chip.nets:
+            # remove net
             chip.removeNet(net)
+
+            #find shortest path
             path = astar2(chip, net.start, net.end, False)
             new_net = []
             for node in path:
                 new_net.append(node.coordinate)
+
+            # place net
             chip.placeNet(net.start, net.end, new_net)
             new_length += len(path) + 2
+
+        # after relaying all nets, save chip to paths by key value of length
         paths[new_length] = chip
         lengths.append(new_length)
 
+    # find shortest of lengths
     shortest = min(lengths)
 
     return paths[shortest], shortest
