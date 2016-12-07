@@ -48,7 +48,7 @@ def manhattan(node, end):
            + abs(node.coordinate[2] - end.coordinate[2])
 
 
-def astar2(chip, start, end):
+def astar2(chip, start, end, restrictions):
     '''
 
     :param chip: chip object
@@ -61,47 +61,44 @@ def astar2(chip, start, end):
     start.parent = None
     current = start
 
-    # get array with all coordinates next to a gate
-    gates_surrounding = nextToGates(chip)
-
     openset = set()
     closedset = set()
 
     openset.add(current)
 
     while openset:
-        # find Node with lowest g score
+        # find node with lowest g + h score
         current = min(openset, key=lambda x: x.G + x.H)
 
-        # check if we found our end gate
+        # if path reached end coordinate
         if current.coordinate == end.coordinate:
-            # print 'path found'
+            # save path
             path = []
             while current.parent:
                 path.append(current)
                 current = current.parent
             path.append(current)
+            # return path minus start and end gate
             return path[::-1]
 
         openset.remove(current)
         closedset.add(current)
 
+        # for each surrounding free coordinate
         for node in makeChildren2(current, chip, end):
+            # create new node
             node = Node('[--]', node)
 
-            # If it is already in the closed set, skip it
+            # if already in closed set, skip
             for child in closedset:
                 if child.coordinate == node.coordinate:
-                    # print 'node in closedset'
                     break
 
             else:
-                # Otherwise if it is already in the open set
+                # else, if already in open set
                 for child in openset:
                     if child.coordinate == node.coordinate:
-                        # print 'node in openset'
-
-                        # Check if we beat the G score
+                        # check if we beat the G score
                         new_g = current.G + 1
 
                         if node.G > new_g:
@@ -110,23 +107,27 @@ def astar2(chip, start, end):
                             node.parent = current
                         break
 
+                # if not in openset or closedset
                 else:
-                    # If it isn't in the open set, calculate the H and G score for the node
+                    # calculate the H and G score for the node
                     node.H = manhattan(node, end)
                     node.G = current.G + 1
 
-                    # check if node is next to a gate
-                    for gate in gates_surrounding:
-                        if gate == node.coordinate:
-                            node.G += 3
+                    # if restrictions are used
+                    if restrictions == True:
+                        # get array with all coordinates next to a gate
+                        gates_surrounding = nextToGates(chip)
+
+                        # check if node is next to a gate
+                        for gate in gates_surrounding:
+                            if gate == node.coordinate:
+                                node.G += 3
 
                     # Set the parent to our current item
                     node.parent = current
 
                     # Add it to the set
                     openset.add(node)
-                    # print 'openset: ', len(openset)
-                    # print 'closedset: ', len(closedset)
 
     # Throw an exception if there is no path
     return 'no path found'

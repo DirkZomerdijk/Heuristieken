@@ -53,7 +53,7 @@ def Runastar2(width, height, layer):
     for values in sorted:
         for start, end in values:
             # run A* algorithm
-            path = astar2(chip, chip.gates[start], chip.gates[end])
+            path = astar2(chip, chip.gates[start], chip.gates[end], True)
             total_runs += 1
 
             # if no path if found
@@ -83,7 +83,7 @@ def Runastar2(width, height, layer):
                 # place net on the grid
                 chip.placeNet(chip.gates[start], chip.gates[end], net)
 
-                total_length += len(path)
+                total_length += len(path) + 2
                 # print 'net number:', total_nets
                 # print 'path length:', len(path)
 
@@ -92,48 +92,44 @@ def Runastar2(width, height, layer):
     print 'Total runs of A*', total_runs
     Visualizer(chip).start()
 
-    newlength = total_length + 1
-    while newlength < total_length:
-        total_length = newlength
-        chip, newlength = makeShorter(chip, total_length)
+    #
+    # new_length = total_length + 1
+    # while new_length < total_length:
+    #     total_length = new_length
+    #     chip, new_length = makeShorter(chip, total_length)
+    chip, new_length = makeShorter(chip, total_length)
 
-    print 'New net length:', newlength
+    print 'New net length:', new_length
     Visualizer(chip).start()
 
 
     # function that takes the chip with complete nets, starts removing one net, and adding it again.
     # Checking after each cycle if the total net length becomes less > if so, keep the new net.
-def makeShorter(chip, netlength):
+def makeShorter(chip, net_length):
     '''
     function that removed nets and checks if there is a shorter path.
     :param chip: Chip object WITH complete netlines
     :return: chip, netlength
     '''
-    # new_netlength = netlength + 1
+    paths = {}
+    paths[net_length] = chip
+    lengths= []
+    for runs in range(50):
+        new_length = 0
+        for net in chip.nets:
+            chip.removeNet(net)
+            path = astar2(chip, net.start, net.end, False)
+            new_net = []
+            for node in path:
+                new_net.append(node.coordinate)
+            chip.placeNet(net.start, net.end, new_net)
+            new_length += len(path) + 2
+        paths[new_length] = chip
+        lengths.append(new_length)
 
-    # while new_netlength > netlength:
-    # netlength = new_netlength
-    new_netlength = 0
-    for net in chip.nets:
-        start = net.start
-        end = net.end
-        chip.removeNet(net)
+    shortest = min(lengths)
 
-        path = astar2(chip, start, end)
-
-        newnet = []
-
-        # get coordinates from net
-        for node in path:
-            newnet.append(node.coordinate)
-        # place net on the grid
-        chip.placeNet(start, end, newnet)
-
-        new_netlength += len(path)
-    print 'netlength old:', netlength
-    print 'netlength new:', new_netlength
-
-    return chip, new_netlength
+    return paths[shortest], shortest
 
 
 
