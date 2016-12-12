@@ -53,7 +53,7 @@ def Runastar2(width, height, layer, nopath):
     for values in sorted:
         for start, end in values:
             # run A* algorithm
-            path, closedset = astar2(chip, chip.gates[start], chip.gates[end])
+            path, closedset = astar2(chip, chip.gates[start], chip.gates[end], True)
             total_runs += 1
 
             # if no path is found
@@ -109,8 +109,8 @@ def Runastar2(width, height, layer, nopath):
                 # place net on the grid
                 chip.placeNet(chip.gates[start], chip.gates[end], net)
 
-                total_length += len(path)
-                print 'net number:', total_nets
+                total_length += len(path) + 2
+                # print 'net number:', total_nets
                 # print 'path length:', len(path)
 
     print 'Total net length:', total_length
@@ -118,48 +118,56 @@ def Runastar2(width, height, layer, nopath):
     print 'Total runs of A*', total_runs
     Visualizer(chip).start()
 
-    newlength = total_length + 1
-    while newlength < total_length:
-        total_length = newlength
-        chip, newlength = makeShorter(chip, total_length)
+    #
+    # new_length = total_length + 1
+    # while new_length < total_length:
+    #     total_length = new_length
+    #     chip, new_length = makeShorter(chip, total_length)
+    chip, new_length = makeShorter(chip, total_length)
 
-    print 'New net length:', newlength
+    print 'New net length:', new_length
     Visualizer(chip).start()
 
 
     # function that takes the chip with complete nets, starts removing one net, and adding it again.
     # Checking after each cycle if the total net length becomes less > if so, keep the new net.
-def makeShorter(chip, netlength):
+def makeShorter(chip, net_length):
     '''
     function that removed nets and checks if there is a shorter path.
     :param chip: Chip object WITH complete netlines
     :return: chip, netlength
     '''
-    # new_netlength = netlength + 1
+    paths = {}
+    paths[net_length] = chip
+    lengths = []
 
-    # while new_netlength > netlength:
-    # netlength = new_netlength
-    new_netlength = 0
-    for net in chip.nets:
-        start = net.start
-        end = net.end
-        chip.removeNet(net)
+    # for set amount of times, relay nets
+    for runs in range(50):
+        new_length = 0
 
-        path = astar2(chip, start, end)
+        # for each net in net list
+        for net in chip.nets:
+            # remove net
+            chip.removeNet(net)
 
-        newnet = []
+            #find shortest path
+            path = astar2(chip, net.start, net.end, False)
+            new_net = []
+            for node in path[0]:
+                new_net.append(node.coordinate)
 
-        # get coordinates from net
-        for node in path:
-            newnet.append(node.coordinate)
-        # place net on the grid
-        chip.placeNet(start, end, newnet)
+            # place net
+            chip.placeNet(net.start, net.end, new_net)
+            new_length += len(path) + 2
 
-        new_netlength += len(path)
-    print 'netlength old:', netlength
-    print 'netlength new:', new_netlength
+        # after relaying all nets, save chip to paths by key value of length
+        paths[new_length] = chip
+        lengths.append(new_length)
 
-    return chip, new_netlength
+    # find shortest of lengths
+    shortest = min(lengths)
+
+    return paths[shortest], shortest
 
 
 def deleteNet(chip, closedset):
@@ -193,7 +201,7 @@ runs = 0
 # Runastar(13, 18, 8)
 specific = 1
 random = 2
-# Runastar2(13, 18, 8, random)
-Runastar2(13, 18, 8, specific)
+Runastar2(13, 18, 8, random)
+# Runastar2(13, 18, 8, specific)
 # Runastar2(17, 18, 8)
 
