@@ -39,7 +39,7 @@ def Runastar(width, height, layer):
     print 'Total net length: ' + total_length + '\nAmount of nets: ' + total_nets
 
 
-def Runastar2(width, height, layer):
+def Runastar2(width, height, layer, nopath):
     chip = Chip(width, height, layer, GATESFILE, NETLISTS)
     total_length = 0
     total_nets = 0
@@ -53,27 +53,53 @@ def Runastar2(width, height, layer):
     for values in sorted:
         for start, end in values:
             # run A* algorithm
-            path = astar2(chip, chip.gates[start], chip.gates[end])
+            path, closedset = astar2(chip, chip.gates[start], chip.gates[end])
             total_runs += 1
 
-            # if no path if found
+            # if no path is found
             if path == 'no path found':
-                # get 3 random nets to be removed and length of those nets
-                removed, netlength = removeRandomNets(chip, 4)
+                if nopath == 1:
+                    print 'no path found'
+                    removed, netlength = deleteNet(chip, closedset)
 
-                # place removed nets again in queue to be placed on the grid
-                for netlist in removed:
-                    sorted[-1].append(netlist)
-                    total_nets -= 1
+                    values.append((start, end))
+                    total_length -= netlength
 
-                # place current start and end gate again in the queue
-                sorted[-1].append((start, end))
+                    for start, end in removed:
+                        startco = 0
+                        endco = 0
+                        for i in range(len(chip.gates)):
+                            if start.coordinate == chip.gates[i].coordinate:
+                                startco = i
+                            if end.coordinate == chip.gates[i].coordinate:
+                                endco = i
+                        sorted[-1].append((startco, endco))
+                        print startco, endco
+                        total_nets -= 1
 
-                # subtract removed length of removed nets from total length of nets
-                total_length -= netlength
+                if nopath == 2:
+
+                    # get 3 random nets to be removed and length of those nets
+                    removed, netlength = removeRandomNets(chip, 4)
+
+                    # place removed nets again in queue to be placed on the grid
+                    for netlist in removed:
+                        sorted[-1].append(netlist)
+                        total_nets -= 1
+
+                    # place current start and end gate again in the queue
+                    sorted[-1].append((start, end))
+
+                    # subtract removed length of removed nets from total length of nets
+                    total_length -= netlength
+
+            elif path == 'switch gates':
+                print 'switch gates'
+                values.append((end, start))
 
             # else: path is found
             else:
+                print 'path found'
                 total_nets += 1
                 net = []
 
@@ -84,7 +110,7 @@ def Runastar2(width, height, layer):
                 chip.placeNet(chip.gates[start], chip.gates[end], net)
 
                 total_length += len(path)
-                # print 'net number:', total_nets
+                print 'net number:', total_nets
                 # print 'path length:', len(path)
 
     print 'Total net length:', total_length
@@ -136,9 +162,38 @@ def makeShorter(chip, netlength):
     return chip, new_netlength
 
 
+def deleteNet(chip, closedset):
+    net = []
+    length = 0
+    for node in closedset:
+        print node.coordinate
+        if node.value == '[--]':
+            x, y, z = node.coordinate
+            children = []
 
+            options = [[x - 1, y, z], [x + 1, y, z], [x, y - 1, z], [x, y + 1, z], [x, y, z - 1], [x, y, z + 1]]
+
+            for i in range(6):
+                if chip.layers[options[i][2]].grid[options[i][0], options[i][1]] != 'free' and \
+                                chip.layers[options[i][2]].grid[options[i][0], options[i][1]].value == 'net':
+                    children.append(chip.layers[options[i][2]].grid[options[i][0], options[i][1]])
+
+            if children:
+                for netpointer in children:
+                    if netpointer == 'net':
+                        net.append((netpointer.start, netpointer.end))
+                        length += len(netpointer.path)
+                        chip.removeNet(chip, netpointer)
+
+                return net, length
+
+
+runs = 0
 # Runsearch(13, 18, 8)
 # Runastar(13, 18, 8)
-Runastar2(13, 18, 8)
+specific = 1
+random = 2
+# Runastar2(13, 18, 8, random)
+Runastar2(13, 18, 8, specific)
 # Runastar2(17, 18, 8)
 

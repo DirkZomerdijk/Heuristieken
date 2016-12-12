@@ -69,6 +69,14 @@ def astar2(chip, start, end):
 
     openset.add(current)
 
+    # check 'free' places
+    free = 0
+    for x in range(chip.width):
+        for y in range(chip.height):
+            for z in range(chip.layer):
+                if chip.layers[z].grid[x, y] == 'free':
+                    free += 1
+
     while openset:
         # find Node with lowest g score
         current = min(openset, key=lambda x: x.G + x.H)
@@ -81,7 +89,7 @@ def astar2(chip, start, end):
                 path.append(current)
                 current = current.parent
             path.append(current)
-            return path[::-1]
+            return path[::-1], None
 
         openset.remove(current)
         closedset.add(current)
@@ -126,7 +134,13 @@ def astar2(chip, start, end):
                     # Add it to the set
                     openset.add(node)
                     # print 'openset: ', len(openset)
-                    # print 'closedset: ', len(closedset)
 
+                    # print closedset
+
+
+        if len(openset) > free/5:
+            return 'switch gates', None
+
+    print 'closedset: ', len(closedset)
     # Throw an exception if there is no path
-    return 'no path found'
+    return 'no path found', closedset
