@@ -4,9 +4,8 @@ from astar import *
 # from astar2 import *
 from collections import defaultdict
 import random
-
-GATESFILE = open('txtfiles/print1.txt', 'r')
-NETLISTS = open('txtfiles/netlist1.txt', 'r')
+from collections import Counter
+import operator
 
 class Layer(object):
     def __init__(self, width, height, layer_num):
@@ -160,16 +159,25 @@ def sortNetlist(chip):
 
 
 def sortOnConnections(chip):
-    x = defaultdict(list)
+    tempnetlist = chip.netlist
+    sortednetlist = []
+    temp = []
+
     for start, end in chip.netlist:
-        connections = 0
-        for netcombination in chip.netlist:
-            if start == netcombination[0] or start == netcombination[1]:
-                connections += 1
+        temp.append(start)
+        temp.append(end)
+    temp = Counter(temp)
 
-        x[connections].append((start, end))
+    for i in range(len(temp)):
+        x = max(temp.iterkeys(), key =(lambda key: temp[key]))
 
-    return sorted(x.values(), reverse=True)
+        for start, end in tempnetlist:
+            if x == start or x == end:
+                sortednetlist.append([start, end])
+                tempnetlist.remove([start, end])
+            del temp[x]
+
+    return sortednetlist
 
 def removeRandomNets(chip, amount):
     '''

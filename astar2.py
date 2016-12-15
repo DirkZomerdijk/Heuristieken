@@ -48,7 +48,7 @@ def manhattan(node, end):
            + abs(node.coordinate[2] - end.coordinate[2])
 
 
-def astar2(chip, start, end, restrictions):
+def astar2(chip, start, end, restrictions, switch, up):
     '''
 
     :param chip: chip object
@@ -119,9 +119,11 @@ def astar2(chip, start, end, restrictions):
                     # calculate the H and G score for the node
                     node.H = manhattan(node, end)
                     node.G = current.G + 1
+                    if up and node.coordinate[2] > current.coordinate[2]:
+                        node.G -= 1
 
                     # if restrictions are used
-                    if restrictions == True:
+                    if restrictions:
                         # get array with all coordinates next to a gate
                         gates_surrounding = nextToGates(chip)
 
@@ -139,8 +141,7 @@ def astar2(chip, start, end, restrictions):
 
                     # print closedset
 
-
-        if len(openset) > free/5:
+        if len(openset) > free/3 and switch:
             return 'switch gates', None
 
     print 'closedset: ', len(closedset)

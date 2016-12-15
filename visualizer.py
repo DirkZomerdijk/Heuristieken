@@ -7,6 +7,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import numpy as np
+from random import randint
+
+colors =['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf']
 
 class Visualizer(object):
     def __init__(self, chip):
@@ -41,6 +44,7 @@ class Visualizer(object):
         ax.scatter(x, y, z, c='r', marker='o')
 
     def addNets(self, ax):
+        counter = 0
         for net in self.chip.nets:
             x = []
             y = []
@@ -49,5 +53,6 @@ class Visualizer(object):
                 x.append(a)
                 y.append(b)
                 z.append(c)
-            ax.plot_wireframe(x, y, z)
+            ax.plot_wireframe(x, y, z, color=colors[counter%8])
+            counter += 1
 
