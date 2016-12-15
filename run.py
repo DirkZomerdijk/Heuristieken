@@ -249,7 +249,7 @@ switch = 3
 # Runastar2(13, 18, 8, random)
 GATESFILE = open('txtfiles/print1.txt', 'r')
 NETLISTS = open('txtfiles/netlist1.txt', 'r')
-Runastar2(13, 18, 8, specific)
+total_runs, total_length, new_length, time = Runastar2(13, 18, 8, specific)
 # Runastar2(17, 18, 8, specific)
 # Runastar2(17, 18, 8, random)
 
