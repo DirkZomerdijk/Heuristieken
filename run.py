@@ -49,10 +49,10 @@ def Runastar2(width, height, layer, nopath):
     indexer = 0
 
     # sort netlist on length between start and end
-    sorted = sortOnConnections(chip)
-    netlist_length = len(sorted)
+    # sorted = sortOnConnections(chip)
 
-    # sorted = sortNetlist(chip)
+    sorted = sortNetlist(chip)
+    netlist_length = len(sorted)
     # search path
     for start, end in sorted:
         # run A* algorithm
