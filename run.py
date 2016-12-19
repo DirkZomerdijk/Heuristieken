@@ -269,9 +269,14 @@ runs = 100
 
 for algorithm in algorithms:
     for key in combinations.keys():
+        width = 0
+        if key == 1:
+            width = 13
+        else:
+            width = 17
+
         for value in combinations[key]:
-            print key
-            print value
+        
             runs_1 = []
             length_1 = []
             newlength_1 = []
@@ -279,7 +284,8 @@ for algorithm in algorithms:
             for i in xrange(runs):
                 GATESFILE = open('txtfiles/print' + str(key) + '.txt', 'r')
                 NETLISTS = open('txtfiles/netlist' + str(value) + '.txt', 'r')
-                total_runs, total_length, new_length, time = Runastar2(17, 18, 8, algorithm)
+
+                total_runs, total_length, new_length, time = Runastar2(width, 18, 8, algorithm)
                 runs_1.append(total_runs)
                 length_1.append(total_length)
                 newlength_1.append(new_length)
