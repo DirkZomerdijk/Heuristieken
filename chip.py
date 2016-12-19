@@ -152,10 +152,15 @@ def sortNetlist(chip):
     :param chip: chip object
     '''
     x = defaultdict(list)
+    temp = []
     for start, end in chip.netlist:
         length = manhattan(chip.gates[start], chip.gates[end])
         x[length].append((start, end))
-    return sorted(x.values())
+
+    for values in x.values():
+        for start_end in values:
+            temp.append(start_end)
+    return temp
 
 
 def sortOnConnections(chip):
