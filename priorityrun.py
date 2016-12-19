@@ -14,11 +14,14 @@ def Runastar2(width, height, layer, nopath):
     total_runs = 0
     indexer = 0
 
-    # sort netlist on length between start and end
+    # sort netlist on length between start and end (S-L)
     # sorted = sortOnConnections(chip)
+    # sort netlist on length between start and end (L-S)
+    # sorted = sortOnConnections(chip)[::-1]
+    # sorted = sortNetlist(chip)
+    sorted = sortNetlist(chip)[::-1]
     netlist_length = len(sorted)
 
-    sorted = sortNetlist(chip)
     # search path
     for start, end in sorted:
         # run A* algorithm
@@ -205,9 +208,9 @@ newlength_1 = []
 time_1 = []
 nets_1 = []
 for i in xrange(runs):
-    GATESFILE = open('txtfiles/print1.txt', 'r')
-    NETLISTS = open('txtfiles/netlist3.txt', 'r')
-    total_nets, total_runs, total_length, new_length, time = Runastar2(13, 18, 8, specific)
+    GATESFILE = open('txtfiles/print2.txt', 'r')
+    NETLISTS = open('txtfiles/netlist6.txt', 'r')
+    total_nets, total_runs, total_length, new_length, time = Runastar2(17, 18, 8, specific)
     runs_1.append(total_runs)
     length_1.append(total_length)
     newlength_1.append(new_length)
@@ -215,7 +218,7 @@ for i in xrange(runs):
     nets_1.append(total_nets)
     print i
 
-print 'PRIORITY_ON_CONNECTIONS, netlist3:'
+print 'PRIORITY_ON_DISTANCE_REVERSE, netlist6:'
 print 'runs', runs_1
 print 'length', length_1
 print 'newlength', newlength_1
