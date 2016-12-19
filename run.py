@@ -49,10 +49,12 @@ def Runastar2(width, height, layer, nopath):
     indexer = 0
 
     # sort netlist on length between start and end
-    # sorted = sortOnConnections(chip)
+    sorted = sortOnConnections(chip)
 
-    sorted = sortNetlist(chip)
+    # sorted = sortNetlist(chip)
     netlist_length = len(sorted)
+
+    # sorted = sorted.reverse()
     # search path
     for start, end in sorted:
         # run A* algorithm
@@ -64,12 +66,11 @@ def Runastar2(width, height, layer, nopath):
         total_runs += 1
         indexer += 1
 
-        if nopath == 3 and netlist_length - total_nets == 1:
+        if netlist_length - total_nets < 2:
             nopath = 1
 
         # if no path is found
         if path == 'no path found':
-
             # random obstakels weghalen
             if nopath == 2:
                 # get 3 random nets to be removed and length of those nets
@@ -264,7 +265,7 @@ more_specific = 3
 # Runastar2(17, 18, 8, specific)
 # Runastar2(17, 18, 8, random)
 
-runs = 1
+runs = 100
 
 
 ###############################################################################################################
@@ -276,16 +277,16 @@ length_1 = []
 newlength_1 = []
 time_1 = []
 for i in xrange(runs):
-    GATESFILE = open('txtfiles/print1.txt', 'r')
-    NETLISTS = open('txtfiles/netlist1.txt', 'r')
-    total_runs, total_length, new_length, time = Runastar2(13, 18, 8, more_specific)
+    GATESFILE = open('txtfiles/print2.txt', 'r')
+    NETLISTS = open('txtfiles/netlist4.txt', 'r')
+    total_runs, total_length, new_length, time = Runastar2(17, 18, 8, more_specific)
     runs_1.append(total_runs)
     length_1.append(total_length)
     newlength_1.append(new_length)
     time_1.append(time.total_seconds())
     print i
 
-print 'MORE SPECIFIC, netlist1:'
+print 'MORE SPECIFIC, netlist4:'
 print 'runs', runs_1
 print 'length', length_1
 print 'newlength', newlength_1
