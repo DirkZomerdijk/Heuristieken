@@ -49,9 +49,9 @@ def Runastar2(width, height, layer, nopath):
     indexer = 0
 
     # sort netlist on length between start and end
-    sorted = sortOnConnections(chip)
+    # sorted = sortOnConnections(chip)
 
-    # sorted = sortNetlist(chip)
+    sorted = sortNetlist(chip)
     netlist_length = len(sorted)
 
     # sorted = sorted.reverse()
@@ -253,41 +253,44 @@ def removeobstacle(chip, closedset, start, end, net, nopath):
 
         return net, length
 
-abc = 1
-
-# Runsearch(13, 18, 8)
-# Runastar(13, 18, 8)
-specific = 1
-random = 2
-more_specific = 3
-
-# Runastar2(13, 18, 8, random)
-# Runastar2(17, 18, 8, specific)
-# Runastar2(17, 18, 8, random)
-
-runs = 100
 
 
 ###############################################################################################################
 # RUNNING 100 RUNS OF RUNASTAR ALGORITHM
 
-# netlist 1
-runs_1 = []
-length_1 = []
-newlength_1 = []
-time_1 = []
-for i in xrange(runs):
-    GATESFILE = open('txtfiles/print2.txt', 'r')
-    NETLISTS = open('txtfiles/netlist4.txt', 'r')
-    total_runs, total_length, new_length, time = Runastar2(17, 18, 8, more_specific)
-    runs_1.append(total_runs)
-    length_1.append(total_length)
-    newlength_1.append(new_length)
-    time_1.append(time.total_seconds())
-    print i
+specific = 1
+random = 2
+more_specific = 3
+algorithms = [specific, random]
 
-print 'MORE SPECIFIC, netlist4:'
-print 'runs', runs_1
-print 'length', length_1
-print 'newlength', newlength_1
-print 'time', time_1
+combinations = {1: [1, 2], 2: [4]}
+
+runs = 100
+
+for algorithm in algorithms:
+    for key in combinations.keys():
+        for value in combinations[key]:
+            print key
+            print value
+            runs_1 = []
+            length_1 = []
+            newlength_1 = []
+            time_1 = []
+            for i in xrange(runs):
+                GATESFILE = open('txtfiles/print' + str(key) + '.txt', 'r')
+                NETLISTS = open('txtfiles/netlist' + str(value) + '.txt', 'r')
+                total_runs, total_length, new_length, time = Runastar2(17, 18, 8, algorithm)
+                runs_1.append(total_runs)
+                length_1.append(total_length)
+                newlength_1.append(new_length)
+                time_1.append(time.total_seconds())
+
+            if algorithm == 1:
+                print 'RANDOM, netlist', value
+            else:
+                print 'SPECIFIC, netlist', value
+
+            print 'runs', runs_1
+            print 'length', length_1
+            print 'newlength', newlength_1
+            print 'time', time_1
