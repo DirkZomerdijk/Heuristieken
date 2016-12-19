@@ -34,7 +34,7 @@ def makeChildren2(node, chip, end):
     options = [[x - 1, y, z], [x + 1, y, z], [x, y - 1, z], [x, y + 1, z], [x, y, z - 1], [x, y, z + 1]]
     parameters = [chip.width, chip.height, chip.layer]
 
-    for i in range(6):
+    for i in xrange(6):
         j = int(math.floor(i / 2))
         if options[i][j] in range(parameters[j]) and (chip.layers[options[i][2]].grid[options[i][0],
                 options[i][1]] == 'free' or options[i] == end.coordinate):
@@ -68,9 +68,9 @@ def astar2(chip, start, end, restrictions, switch, up):
 
     # check 'free' places
     free = 0
-    for x in range(chip.width):
-        for y in range(chip.height):
-            for z in range(chip.layer):
+    for x in xrange(chip.width):
+        for y in xrange(chip.height):
+            for z in xrange(chip.layer):
                 if chip.layers[z].grid[x, y] == 'free':
                     free += 1
 
@@ -144,6 +144,6 @@ def astar2(chip, start, end, restrictions, switch, up):
         if len(openset) > free/3 and switch:
             return 'switch gates', None
 
-    print 'closedset: ', len(closedset)
+    # print 'closedset: ', len(closedset)
     # Throw an exception if there is no path
     return 'no path found', closedset
