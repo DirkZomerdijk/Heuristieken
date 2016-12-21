@@ -1,0 +1,6 @@
+ON DISTANCE
+RANDOM, netlist4
+runs [116, 60, 484]
+length [1805, 1118, 5689]
+newlength [796, 764, 793]
+time [191.874, 79.738, 1156.649]

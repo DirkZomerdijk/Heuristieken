@@ -1,8 +1,23 @@
+# Fish 'n Chips     Laila Blomer, Dirk Zomerdijk, Anna Vos
+#
+# Heuristieken
+# Case: Chips & Circuits
+#
+# astar.py
+
 from chip import *
 import math
 
 class Node:
+    '''
+    A Node represents a coordinate on the chip which is being searched by the A* algorithm
+    '''
     def __init__(self, value, coordinate):
+        '''
+
+        :param value: a string, which represents the value of that node
+        :param coordinate: a list with [x, y, z]
+        '''
         self.value = value
         self.coordinate = coordinate
         self.parent = None
@@ -26,6 +41,12 @@ def nextToGates(chip):
 
 
 def make_children(node, chip, end):
+    '''
+    :param node: Node instance
+    :param chip: Chip object
+    :param end: Gate object
+    :return: returns surrounding coordinates of node
+    '''
     # get coordinates of node
     x, y, z = node.coordinate
 
@@ -45,16 +66,23 @@ def make_children(node, chip, end):
 
 # returns the chip length between two coordinates
 def manhattan(node, end):
+    '''
+    :param node: Node instance
+    :param end: Gate object, the target gate of the net
+    :return: minimum netlength from the node to the end Gate.
+    '''
     return abs(node.coordinate[0] - end.coordinate[0]) + abs(node.coordinate[1] - end.coordinate[1]) \
            + abs(node.coordinate[2] - end.coordinate[2])
 
 
 def astar(chip, start, end, restrictions, switch, up):
     '''
+    A* algorithm looks for the shortest path between the start and end coordinate, based on the cost of a specific move
+    (coordinate change) and the minimum length between that coordinate and the end coordinate.
     :param chip: chip object
     :param start: Gate object
     :param end: Gate object
-    :return:
+    :return: if a path is found: that is returned. if no path is found, this is also returned.
     '''
     # define cost variables
     start.G = 0

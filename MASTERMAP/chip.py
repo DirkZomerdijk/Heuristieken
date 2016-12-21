@@ -1,8 +1,12 @@
-# Creates matrix with plotted net points
+# Fish 'n Chips     Laila Blomer, Dirk Zomerdijk, Anna Vos
+#
+# Heuristieken
+# Case: Chips & Circuits
+#
+# chip.py
+
 
 from astar import *
-
-
 
 class Layer(object):
     def __init__(self, width, height, layer_num):

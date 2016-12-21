@@ -1,3 +1,10 @@
+# Fish 'n Chips     Laila Blomer, Dirk Zomerdijk, Anna Vos
+#
+# Heuristieken
+# Case: Chips & Circuits
+#
+# run.py
+
 from functions import *
 from visualizer import *
 from astar import *
@@ -16,16 +23,16 @@ def run_algorithm(width, height, layer, no_path):
     indexer = 0
 
     # sort netlist on amount of connections per gate from high to low
-    sorted = sortOnConnections(chip)
+    sorted = sort_on_connections(chip)
 
     # sort netlist on amount of connections per gate from low to high
-    # sorted = sortOnConnections(chip)[::-1]
+    # sorted = sort_on_connections(chip)[::-1]
 
     # sort netlist on distance from short to long
-    # sorted = sortNetlist(chip)
+    # sorted = sort_on_distance(chip)
 
     # sort netlist on distance from long to short
-    # sorted = sortNetlist(chip)[::-1]
+    # sorted = sort_on_distance(chip)[::-1]
 
     netlist_length = len(sorted)
 
@@ -46,7 +53,7 @@ def run_algorithm(width, height, layer, no_path):
             # remove random obstacles
             if no_path == 2:
                 # get 3 random nets to be removed and return netlength
-                removed, netlength = removeRandomNets(chip, 3)
+                removed, netlength = remove_random_nets(chip, 3)
 
                 # add removed nets to queue
                 for net in removed:
@@ -88,10 +95,12 @@ def run_algorithm(width, height, layer, no_path):
         # if path is found
         else:
             # get coordinates from net
-            net_path = [net_path.append(node.coordinate) for node in path]
+            new_net = []
+            for node in path:
+                new_net.append(node.coordinate)
 
             # place net path on the chip
-            chip.placeNet(chip.gates[start], chip.gates[end], net_path)
+            chip.placeNet(chip.gates[start], chip.gates[end], new_net)
 
             # update return variable
             total_nets += 1

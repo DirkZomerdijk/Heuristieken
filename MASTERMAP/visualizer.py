@@ -1,5 +1,7 @@
+# Fish 'n Chips     Laila Blomer, Dirk Zomerdijk, Anna Vos
+#
 # Heuristieken
-# Chips & Circuits
+# Case: Chips & Circuits
 #
 # visualizer.py
 

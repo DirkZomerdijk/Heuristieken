@@ -1,9 +1,16 @@
+# Fish 'n Chips     Laila Blomer, Dirk Zomerdijk, Anna Vos
+#
+# Heuristieken
+# Case: Chips & Circuits
+#
+# functions.py
+
 import random
 from collections import Counter
 from astar import *
 from collections import defaultdict
 
-def sortNetlist(chip):
+def sort_on_distance(chip):
     '''
     takes chip and returns netlist sorted by distance between gates.
     :param chip: chip object
@@ -20,7 +27,11 @@ def sortNetlist(chip):
     return temp
 
 
-def sortOnConnections(chip):
+def sort_on_connections(chip):
+    '''
+    :param chip: Chip object
+    :return: returns netlist sorted on amount of gate connections
+    '''
     tempnetlist = chip.netlist
     sortednetlist = []
     temp = []
@@ -41,7 +52,7 @@ def sortOnConnections(chip):
 
     return sortednetlist
 
-def removeRandomNets(chip, amount):
+def remove_random_nets(chip, amount):
     '''
     function removes random nets from the chip.
     :param chip: Chip object
@@ -124,6 +135,12 @@ def make_shorter(chip, net_length):
 
 
 def find_obstacles(chip, closedset):
+    '''
+    Function that collects all Nets objects surrounding the closedset
+    :param chip: Chip object
+    :param closedset: set with nodes in the closedset of A*
+    :return: returns children of nodes in the closedset who are Nets objects
+    '''
     coordinates = []
     children = []
 
@@ -150,6 +167,15 @@ def find_obstacles(chip, closedset):
 
 
 def remove_obstacle(chip, closedset, start, end, nets_removed, no_path):
+    '''
+    :param chip: Chip object
+    :param closedset: set with nodes in the closedset of A*
+    :param start: Gate object
+    :param end:
+    :param nets_removed:
+    :param no_path:
+    :return:
+    '''
     length = 0
     kids, coordinates = find_obstacles(chip, closedset)
     netpointer = None
