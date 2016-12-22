@@ -5,17 +5,30 @@
 #
 # visualizer.py
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
+import numpy as np
 
 # set colors for coloring nets
-colors =['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf']
+colors =['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf']
+
 
 class Visualizer(object):
+    '''
+    Visualizer is an objects which returns a 3D image of the chip
+    '''
     def __init__(self, chip):
+        '''
+        :param chip: Chip object
+        '''
         self.chip = chip
 
-    # initiate 3d array
     def start(self):
+        '''
+        initiating 3D plot with axes and limits
+        :return: a 3D plot with gates and nets
+        '''
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim3d(0, self.chip.width - 1)
@@ -35,6 +48,10 @@ class Visualizer(object):
         plt.show()
 
     def add_gates(self, ax):
+        '''
+        functions that places gates on the first layer of the grid
+        :param ax: 3D plot with parameters set at start(self)
+        '''
         x = []
         y = []
         z = []
@@ -46,6 +63,10 @@ class Visualizer(object):
         ax.scatter(x, y, z, c='r', marker='o')
 
     def add_nets(self, ax):
+        '''
+        functions that places nets on the grid, in different colours
+        :param ax: 3D plot with parameters set at start(self)
+        '''
         counter = 0
         for net in self.chip.nets:
             x = []

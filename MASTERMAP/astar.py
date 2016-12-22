@@ -8,13 +8,13 @@
 from chip import *
 import math
 
+
 class Node:
     '''
     A Node represents a coordinate on the chip which is being searched by the A* algorithm
     '''
     def __init__(self, value, coordinate):
         '''
-
         :param value: a string, which represents the value of that node
         :param coordinate: a list with [x, y, z]
         '''
@@ -28,7 +28,7 @@ class Node:
         return '[..]'
 
 
-def nextToGates(chip):
+def next_to_gates(chip):
     '''
     :param chip: Chip object
     :return: returns coordinates of all children from all gates on the chip
@@ -64,6 +64,7 @@ def make_children(node, chip, end):
     # return free coordinates
     return children
 
+
 # returns the chip length between two coordinates
 def manhattan(node, end):
     '''
@@ -82,6 +83,9 @@ def astar(chip, start, end, restrictions, switch, up):
     :param chip: chip object
     :param start: Gate object
     :param end: Gate object
+    :param restrictions: is true, extra costs are added to the coordinates surrounding gates
+    :param switch: if true, the start and end gate are switched and A* is runned again
+    :param up: if true, coordinates on higher layers get lower cost than coordinates on lower layers
     :return: if a path is found: that is returned. if no path is found, this is also returned.
     '''
     # define cost variables
@@ -159,7 +163,7 @@ def astar(chip, start, end, restrictions, switch, up):
                     # add costs to nodes surrounding gates
                     if restrictions:
                         # get array with all coordinates next to a gate
-                        gates_surrounding = nextToGates(chip)
+                        gates_surrounding = next_to_gates(chip)
 
                         # check if node is next to a gate
                         for gate in gates_surrounding:

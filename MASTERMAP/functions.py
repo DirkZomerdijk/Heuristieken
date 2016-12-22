@@ -5,15 +5,21 @@
 #
 # functions.py
 
-import random
+
 from collections import Counter
 from astar import *
 from collections import defaultdict
+from visualizer import *
+from chip import *
+import random
+import datetime
+
 
 def sort_on_distance(chip):
     '''
     takes chip and returns netlist sorted by distance between gates.
-    :param chip: chip object
+    :param chip: Chip object
+    :return: netlist sorted on longest to shortest distance between the start and end gate.
     '''
     x = defaultdict(list)
     temp = []
@@ -52,6 +58,7 @@ def sort_on_connections(chip):
 
     return sortednetlist
 
+
 def remove_random_nets(chip, amount):
     '''
     function removes random nets from the chip.
@@ -67,7 +74,7 @@ def remove_random_nets(chip, amount):
     for i in range(amount):
         # get random net
         remove = random.choice(chip.nets)
-        netlength += len(remove.path)
+        netlength += len(remove.path) + 2
 
         temp.append((remove.start, remove.end))
 
@@ -111,7 +118,7 @@ def make_shorter(chip, net_length):
             chip.removeNet(net)
 
             # find shortest path
-            path, x = astar(chip, net.start, net.end, False, True, False)
+            path, x = astar(chip, net.start, net.end, restrictions=False, switch=True, up=False)
 
             # get coordinates new path
             new_net = []
@@ -166,33 +173,20 @@ def find_obstacles(chip, closedset):
     return children, coordinates
 
 
-def remove_obstacle(chip, closedset, start, end, nets_removed, no_path):
+def remove_obstacle(chip, closedset, start, end, nets_removed):
     '''
     :param chip: Chip object
     :param closedset: set with nodes in the closedset of A*
     :param start: Gate object
-    :param end:
-    :param nets_removed:
-    :param no_path:
-    :return:
+    :param end: Gate object
+    :param nets_removed: List with Nets pointers to be removed
+    :return: returns nets_removed, and netlenght of net between start and end
     '''
     length = 0
     kids, coordinates = find_obstacles(chip, closedset)
-    netpointer = None
 
     # remove specific obstacle
-    if no_path == 1:
-        netpointer = random.choice(kids)
-
-    # remove selective obstacle
-    elif no_path == 3:
-        # check length for every child to end gate
-        for i in xrange(len(kids)):
-            kids[i].manhattan = abs(coordinates[i][0] - chip.gates[end].coordinate[0]) + abs(
-                coordinates[i][1] - chip.gates[end].coordinate[1]) + abs(
-                coordinates[i][2] - chip.gates[end].coordinate[2])
-        # select child with lowest manhattan score
-        netpointer = min(kids, key=lambda x: x.manhattan)
+    netpointer = random.choice(kids)
 
     # remember net to be removed
     nets_removed.append((netpointer.start, netpointer.end))
@@ -202,11 +196,11 @@ def remove_obstacle(chip, closedset, start, end, nets_removed, no_path):
     chip.removeNet(netpointer)
 
     # retry finding path
-    path, x = astar(chip, chip.gates[start], chip.gates[end], True, False, True)
+    path, x = astar(chip, chip.gates[start], chip.gates[end], restrictions=True, switch=False, up=True)
 
     # if again "no path found" remove another obstacle
     if path == "no path found" or path == "switch gates":
-        return remove_obstacle(chip, x, start, end, nets_removed, no_path)
+        return remove_obstacle(chip, x, start, end, nets_removed)
 
     # if path found
     else:
@@ -222,3 +216,132 @@ def remove_obstacle(chip, closedset, start, end, nets_removed, no_path):
         length += len(path) + 1
 
         return nets_removed, length
+
+
+def run_algorithm(width, height, layer, grid_file, netlist_file, no_path, sorting, visualize):
+    '''
+    :param width: integer, deciding the width of the print
+    :param height: integer, deciding the height of the print
+    :param layer: integer, deciding the amount of layers are added to the print
+    :param grid_file: text file containing coordinates of gates on the print
+    :param netlist_file: text file containing start and end gatenumber of all nets from 1 netlist
+    :param no_path: string, defines which removal method is used
+    :param sorting: string, defines which sorting method of the netlist is used
+    :param visualize: boolean, if true the chip will be visualised in 3D after completion
+    :return: returns total runs of A*, running time, netlength after completion and netlength after 'make_shorter' function
+    '''
+
+    time_start = datetime.datetime.now()
+    chip = Chip(width, height, layer, grid_file, netlist_file)
+
+    # define return variables
+    total_length = 0
+    total_nets = 0
+    total_runs = 0
+    indexer = 0
+
+    # sorting method
+    if sorting == 'on_connections':
+        # sort netlist on amount of connections per gate from high to low
+        sorted_netlist = sort_on_connections(chip)
+
+    if sorting == 'on_connections_reverse':
+        # sort netlist on amount of connections per gate from low to high
+        sorted_netlist = sort_on_connections(chip)[::-1]
+
+    if sorting == 'on_distance_reverse':
+        # sort netlist on distance from short to long
+        sorted_netlist = sort_on_distance(chip)
+
+    if sorting == 'on_distance':
+        # sort netlist on distance from long to short
+        sorted_netlist = sort_on_distance(chip)[::-1]
+
+    netlist_length = len(sorted_netlist)
+
+    # search path
+    for start, end in sorted_netlist:
+        # run A* algorithm
+        path, closedset = astar(chip, chip.gates[start], chip.gates[end], restrictions=True, switch=True, up=True)
+
+        # update return variable
+        total_runs += 1
+        indexer += 1
+        # for selective remove of obstacles to avoid infinite loop
+        if netlist_length - total_nets < 2 and no_path == 3:
+            no_path = 1
+
+        # if no path is found
+        if path == 'no path found':
+            Visualizer(chip).start()
+            # remove random obstacles
+            if no_path == 'random':
+                # get 3 random nets to be removed and return netlength
+                removed, netlength = remove_random_nets(chip, 3)
+
+                # add removed nets to queue
+                for net in removed:
+                    sorted_netlist.append(net)
+                    total_nets -= 1
+
+                # add current to queue
+                sorted_netlist.append((start, end))
+
+                # update return variable
+                total_length -= netlength
+
+            # remove specific obstacles
+            else:
+                nets_removed = []
+                removed, netlength = remove_obstacle(chip, closedset, start, end, nets_removed)
+                total_nets += 1
+                total_length += netlength
+
+                # append removed nets to queue
+                for start, end in removed:
+                    start_coordinate = 0
+                    end_coordinate = 0
+
+                    for i in xrange(len(chip.gates)):
+                        if start.coordinate == chip.gates[i].coordinate:
+                            start_coordinate = i
+
+                        if end.coordinate == chip.gates[i].coordinate:
+                            end_coordinate = i
+
+                    sorted_netlist.append((start_coordinate, end_coordinate))
+
+                    # update return variables
+                    total_nets -= 1
+                    total_runs += 1
+
+        # if closed set of astar is larger than free nodes / 2
+        elif path == 'switch gates':
+            sorted_netlist.insert(indexer, (end, start))
+
+        # if path is found
+        else:
+            print "hallo laila"
+            # get coordinates from net
+            new_net = []
+            for node in path:
+                new_net.append(node.coordinate)
+
+            # place net path on the chip
+            chip.placeNet(chip.gates[start], chip.gates[end], new_net)
+
+            # update return variable
+            total_nets += 1
+            total_length += len(path) + 1
+    Visualizer(chip).start()
+    # replace all nets
+    chip, new_length = make_shorter(chip, total_length)
+
+    # collect time
+    time_end = datetime.datetime.now()
+
+    # visualize chip
+    if visualize:
+        Visualizer(chip).start()
+
+    return total_runs, total_length, new_length, time_end - time_start

@@ -84,18 +84,21 @@ class Nets(object):
 
 # create Chip function
 class Chip(object):
-    def __init__(self, width, height, layer, GATESFILE, NETLISTS):
+    def __init__(self, width, height, layer, gate_file, netlist_file):
         '''
-        :param layer: Layer object
-        :param GATESFILE: file containing all gates
+        :param width: integer
+        :param height: integer
+        :param layer: integer
+        :param gate_file: text file containing coordinates for all gates on the print
+        :param netlist_file: text file containing all gates that should be connected
         '''
         self.width = width
         self.height = height
         self.layer = layer
-        self._gatesfile = [[int(n) for n in line.replace('\n', '').split(',')] for line in GATESFILE.readlines()]
+        self._gatesfile = [[int(n) for n in line.replace('\n', '').split(',')] for line in gate_file.readlines()]
         self.gates = [Gate((x, y)) for x, y in self._gatesfile]
         self.layers = [Layer(self.width, self.height, i) for i in range(self.layer)]
-        self.netlist = [[int(n) for n in line.split(',')] for line in NETLISTS.readlines()]
+        self.netlist = [[int(n) for n in line.split(',')] for line in netlist_file.readlines()]
         self.nets = []
 
         self._loadGates()
@@ -113,11 +116,10 @@ class Chip(object):
 
     def placeNet(self, start, end, path):
         '''
-        places a net on layer objects
-        net: is an array with coordinates
-        :return:
+        :param start: Gate object
+        :param end: Gate object
+        :param path: list with coordinates connecting start and end
         '''
-
         net_pointer = Nets(start, end, path)
         for x, y, z in path:
             self.layers[z].place(net_pointer, x, y)
@@ -125,9 +127,7 @@ class Chip(object):
 
     def removeNet(self, pointer):
         '''
-
-        :param pointer: a pointer to a Nets object to be removed
-        :return: nothing
+        :param: Nets object: a pointer to a Nets object to be removed
         '''
 
         for x, y, z in pointer.path:
@@ -138,9 +138,8 @@ class Chip(object):
                 self.nets.remove(net)
 
     def printChip(self):
+        '''
+        prints text version of the chip, printing the values of every coordinate
+        '''
         for layer in self.layers:
             print layer
-
-
-
-
