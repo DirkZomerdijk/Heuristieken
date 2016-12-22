@@ -18,15 +18,11 @@ class Visualizer(object):
     '''
     Visualizer is an objects which returns a 3D image of the chip
     '''
-
     def __init__(self, chip):
         '''
         :param chip: Chip object
         '''
         self.chip = chip
-
-        # draw visualisation
-        self.start()
 
     def start(self):
         '''

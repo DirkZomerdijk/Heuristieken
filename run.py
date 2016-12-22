@@ -134,12 +134,12 @@ def Runastar2(width, height, layer, nopath):
     # print 'Total net length:', total_length
     # print 'Amount of nets:', total_nets
     # print 'Total runs of A*', total_runs
-    Visualizer(chip).start()
+    # Visualizer(chip).start()
 
     chip, new_length = makeShorter(chip, total_length)
 
     # print 'New net length:', new_length
-    Visualizer(chip).start()
+    # Visualizer(chip).start()
 
     b = datetime.datetime.now()
 
@@ -255,127 +255,120 @@ def removeobstacle(chip, closedset, start, end, net, nopath):
 
 
 
-GATESFILE = open('txtfiles/print2.txt', 'r')
-NETLISTS = open('txtfiles/netlist4.txt', 'r')
-
-
-Runastar2(17, 18, 8, 1)
-
-
 ###############################################################################################################
 # RUNNING 100 RUNS OF RUNASTAR ALGORITHM
-# outputrandom1 = 'outputrandom1.txt'
-# outputrandom2 = 'outputrandom2.txt'
-# outputspecific1 = 'outputspecific1.txt'
-# outputspecific2 = 'outputspecific2.txt'
-#
-# specific = 1
-# random = 2
-# more_specific = 3
-# algorithms = [specific, random]
-#
-# combinations = {1: [1, 2]}
-#
-# runs = 100
-#
-# for algorithm in algorithms:
-#     for key in combinations.keys():
-#         width = 0
-#         if key == 1:
-#             width = 13
-#         else:
-#             width = 17
-#
-#         for value in combinations[key]:
-#
-#             runs_1 = []
-#             length_1 = []
-#             newlength_1 = []
-#             time_1 = []
-#
-#             for i in xrange(runs):
-#                 GATESFILE = open('txtfiles/print' + str(key) + '.txt', 'r')
-#                 NETLISTS = open('txtfiles/netlist' + str(value) + '.txt', 'r')
-#
-#                 total_runs, total_length, new_length, time = Runastar2(width, 18, 8, algorithm)
-#                 runs_1.append(total_runs)
-#                 length_1.append(total_length)
-#                 newlength_1.append(new_length)
-#                 time_1.append(time.total_seconds())
-#
-#
-#                 if algorithm == 1:
-#                     if value == 1:
-#                         file = open(outputrandom1, 'w')
-#                         file.write("ON DISTANCE\n")
-#                         file.write('RANDOM, netlist')
-#                         file.write(str(value))
-#                         file.write('\n')
-#                         file.write('runs ')
-#                         file.write(str(runs_1))
-#                         file.write('\n')
-#                         file.write('length ')
-#                         file.write(str(length_1))
-#                         file.write('\n')
-#                         file.write('newlength ')
-#                         file.write(str(newlength_1))
-#                         file.write('\n')
-#                         file.write('time ')
-#                         file.write(str(time_1))
-#                         file.close()
-#                     else:
-#                         file = open(outputrandom2, 'w')
-#                         file.write("ON DISTANCE\n")
-#                         file.write('RANDOM, netlist')
-#                         file.write(str(value))
-#                         file.write('\n')
-#                         file.write('runs ')
-#                         file.write(str(runs_1))
-#                         file.write('\n')
-#                         file.write('length ')
-#                         file.write(str(length_1))
-#                         file.write('\n')
-#                         file.write('newlength ')
-#                         file.write(str(newlength_1))
-#                         file.write('\n')
-#                         file.write('time ')
-#                         file.write(str(time_1))
-#                         file.close()
-#                 else:
-#                     if value == 1:
-#                         file = open(outputspecific1, 'w')
-#                         file.write("ON DISTANCE\n")
-#                         file.write('SPECIFIC, netlist')
-#                         file.write(str(value))
-#                         file.write('\n')
-#                         file.write('runs ')
-#                         file.write(str(runs_1))
-#                         file.write('\n')
-#                         file.write('length ')
-#                         file.write(str(length_1))
-#                         file.write('\n')
-#                         file.write('newlength ')
-#                         file.write(str(newlength_1))
-#                         file.write('\n')
-#                         file.write('time ')
-#                         file.write(str(time_1))
-#                         file.close()
-#                     else:
-#                         file = open(outputspecific2, 'w')
-#                         file.write("ON DISTANCE\n")
-#                         file.write('SPECIFIC, netlist')
-#                         file.write(str(value))
-#                         file.write('\n')
-#                         file.write('runs ')
-#                         file.write(str(runs_1))
-#                         file.write('\n')
-#                         file.write('length ')
-#                         file.write(str(length_1))
-#                         file.write('\n')
-#                         file.write('newlength ')
-#                         file.write(str(newlength_1))
-#                         file.write('\n')
-#                         file.write('time ')
-#                         file.write(str(time_1))
-#                         file.close()
-#
+outputrandom1 = 'outputrandom1.txt'
+outputrandom2 = 'outputrandom2.txt'
+outputspecific1 = 'outputspecific1.txt'
+outputspecific2 = 'outputspecific2.txt'
+
+specific = 1
+random = 2
+more_specific = 3
+algorithms = [specific, random]
+
+combinations = {1: [1, 2]}
+
+runs = 100
+
+for algorithm in algorithms:
+    for key in combinations.keys():
+        width = 0
+        if key == 1:
+            width = 13
+        else:
+            width = 17
+
+        for value in combinations[key]:
+
+            runs_1 = []
+            length_1 = []
+            newlength_1 = []
+            time_1 = []
+
+            for i in xrange(runs):
+                GATESFILE = open('txtfiles/print' + str(key) + '.txt', 'r')
+                NETLISTS = open('txtfiles/netlist' + str(value) + '.txt', 'r')
+
+                total_runs, total_length, new_length, time = Runastar2(width, 18, 8, algorithm)
+                runs_1.append(total_runs)
+                length_1.append(total_length)
+                newlength_1.append(new_length)
+                time_1.append(time.total_seconds())
+
+
+                if algorithm == 1:
+                    if value == 1:
+                        file = open(outputrandom1, 'w')
+                        file.write("ON DISTANCE\n")
+                        file.write('RANDOM, netlist')
+                        file.write(str(value))
+                        file.write('\n')
+                        file.write('runs ')
+                        file.write(str(runs_1))
+                        file.write('\n')
+                        file.write('length ')
+                        file.write(str(length_1))
+                        file.write('\n')
+                        file.write('newlength ')
+                        file.write(str(newlength_1))
+                        file.write('\n')
+                        file.write('time ')
+                        file.write(str(time_1))
+                        file.close()
+                    else:
+                        file = open(outputrandom2, 'w')
+                        file.write("ON DISTANCE\n")
+                        file.write('RANDOM, netlist')
+                        file.write(str(value))
+                        file.write('\n')
+                        file.write('runs ')
+                        file.write(str(runs_1))
+                        file.write('\n')
+                        file.write('length ')
+                        file.write(str(length_1))
+                        file.write('\n')
+                        file.write('newlength ')
+                        file.write(str(newlength_1))
+                        file.write('\n')
+                        file.write('time ')
+                        file.write(str(time_1))
+                        file.close()
+                else:
+                    if value == 1:
+                        file = open(outputspecific1, 'w')
+                        file.write("ON DISTANCE\n")
+                        file.write('SPECIFIC, netlist')
+                        file.write(str(value))
+                        file.write('\n')
+                        file.write('runs ')
+                        file.write(str(runs_1))
+                        file.write('\n')
+                        file.write('length ')
+                        file.write(str(length_1))
+                        file.write('\n')
+                        file.write('newlength ')
+                        file.write(str(newlength_1))
+                        file.write('\n')
+                        file.write('time ')
+                        file.write(str(time_1))
+                        file.close()
+                    else:
+                        file = open(outputspecific2, 'w')
+                        file.write("ON DISTANCE\n")
+                        file.write('SPECIFIC, netlist')
+                        file.write(str(value))
+                        file.write('\n')
+                        file.write('runs ')
+                        file.write(str(runs_1))
+                        file.write('\n')
+                        file.write('length ')
+                        file.write(str(length_1))
+                        file.write('\n')
+                        file.write('newlength ')
+                        file.write(str(newlength_1))
+                        file.write('\n')
+                        file.write('time ')
+                        file.write(str(time_1))
+                        file.close()
+

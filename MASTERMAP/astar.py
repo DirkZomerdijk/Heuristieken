@@ -122,7 +122,8 @@ def astar(chip, start, end, restrictions, switch, up):
                 path.append(current)
                 current = current.parent
             path.append(current)
-            return path[::-1], None
+            return path, None
+            # return path[::-1], None
 
         openset.remove(current)
         closedset.add(current)
@@ -176,7 +177,7 @@ def astar(chip, start, end, restrictions, switch, up):
                     openset.add(child)
 
         # if observed space is larger than 1/3 of free space, switch gates
-        if len(closedset) > free/2 and switch:
+        if len(closedset) > free/3 and switch:
             return 'switch gates', None
 
     return 'no path found', closedset
