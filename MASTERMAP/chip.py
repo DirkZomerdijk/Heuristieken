@@ -8,8 +8,18 @@
 
 from astar import *
 
+
 class Layer(object):
+    '''
+    a Layer object represents one layer of the chip
+    '''
+
     def __init__(self, width, height, layer_num):
+        '''
+        :param width: integer, width of the chip
+        :param height: integer, height of the chip
+        :param layer_num: integer
+        '''
         self.width = width
         self.height = height
         self.layer_num = layer_num
@@ -19,46 +29,47 @@ class Layer(object):
                 self.grid[x, y] = 'free'
 
     def place(self, item, x, y):
+        '''
+        :param item: object of class Nets or Gate
+        :param x: integer
+        :param y: integer
+        places a specific item, such as a net on the grid
+        '''
         self.grid[x, y] = item
 
     def remove(self, x, y):
+        '''
+        :param x: integer
+        :param y: integer
+        resets specific coordinate on the grid to 'free'
+        '''
         self.grid[x, y] = 'free'
 
-    def __str__(self):
-        string = ''
-        for i in range(self.width):
-            for j in range(self.height):
-               string += str(self.grid[i, j]) + ' '
-            string += '\n'
-        return string
 
-# class gate
 class Gate(object):
+    '''
+    Gate object represents a gate on Layer 0 of the chip
+    '''
     def __init__(self, coordinate):
-        """
-        layer = layer object, met z = 0
-        coordinate = (x,y)
-        """
+        '''
+        :param coordinate: list with x and y coordinate of the Gate
+        '''
         self.coordinate = [coordinate[0], coordinate[1], 0]
         self.x = coordinate[0]
         self.y = coordinate[1]
         self.z = 0
-        self.connections = []
         self.value = 'gate'
 
-    def addConnection(self, connection):
-        self.connections.append(connection)
-
-    def __str__(self):
-        return self.value
 
 class Nets(object):
+    '''
+    Nets object represents a net on the chip from one gate to another
+    '''
     def __init__(self, start, end, path):
         """
         :param start: Gate object
         :param end: Gate object
-        :param path: array (or dict?) with coordinates of the path of the net (x, y, z values!)
-        netline: dictionary with whole net path
+        :param path: list, with coordinates of the path of the net
         """
         self.start = start
         self.end = end
@@ -66,12 +77,11 @@ class Nets(object):
         self.netline = []
         self.value = 'net'
 
-        self.makeNet()
+        self.make_net()
 
-    def makeNet(self):
+    def make_net(self):
         """
         make self.netline from start, end, and path, with (x, y, x) values
-        :return: nothing
         """
         self.netline.append((self.start.x, self.start.y, 0))
         for point in self.path:
@@ -79,11 +89,10 @@ class Nets(object):
         self.netline.append((self.end.x, self.end.y, 0))
 
 
-    def __str__(self):
-        return self.value
-
-# create Chip function
 class Chip(object):
+    '''
+    Chip object represents the whole chip, with all layers, gates and nets.
+    '''
     def __init__(self, width, height, layer, gate_file, netlist_file):
         '''
         :param width: integer
@@ -101,20 +110,18 @@ class Chip(object):
         self.netlist = [[int(n) for n in line.split(',')] for line in netlist_file.readlines()]
         self.nets = []
 
-        self._loadGates()
+        self._load_gates()
 
-    def _loadGates(self):
+    def _load_gates(self):
         '''
-        read gates from file and make gate objects on layer
-        take gates and fill array with gate number pointing to
-        :return:
+        Read gates from file and place Gate objects on first layer of the chip
         '''
         count = 0
         for x, y in self._gatesfile:
             count += 1
             self.layers[0].place(Gate((x, y)), x, y)
 
-    def placeNet(self, start, end, path):
+    def place_net(self, start, end, path):
         '''
         :param start: Gate object
         :param end: Gate object
@@ -125,21 +132,15 @@ class Chip(object):
             self.layers[z].place(net_pointer, x, y)
         self.nets.append(net_pointer)
 
-    def removeNet(self, pointer):
+    def remove_net(self, pointer):
         '''
-        :param: Nets object: a pointer to a Nets object to be removed
+        :param pointer: Nets object to be removed
         '''
-
+        # remove net from chip
         for x, y, z in pointer.path:
             self.layers[z].place('free', x, y)
 
+        # remove net from nets list
         for net in self.nets:
             if net == pointer:
                 self.nets.remove(net)
-
-    def printChip(self):
-        '''
-        prints text version of the chip, printing the values of every coordinate
-        '''
-        for layer in self.layers:
-            print layer

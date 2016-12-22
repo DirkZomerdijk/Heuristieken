@@ -79,7 +79,7 @@ def remove_random_nets(chip, amount):
         temp.append((remove.start, remove.end))
 
         # remove net
-        chip.removeNet(remove)
+        chip.remove_net(remove)
 
     for start, end in temp:
         startco = 0
@@ -115,7 +115,7 @@ def make_shorter(chip, net_length):
 
         for net in chip.nets:
             # remove net
-            chip.removeNet(net)
+            chip.remove_net(net)
 
             # find shortest path
             path, x = astar(chip, net.start, net.end, restrictions=False, switch=True, up=False)
@@ -126,7 +126,7 @@ def make_shorter(chip, net_length):
                 new_net.append(node.coordinate)
 
             # place net
-            chip.placeNet(net.start, net.end, new_net)
+            chip.place_net(net.start, net.end, new_net)
 
             # update return variable
             new_length += len(path) + 1
@@ -193,7 +193,7 @@ def remove_obstacle(chip, closedset, start, end, nets_removed):
     length -= (len(netpointer.path) + 1)
 
     # remove net
-    chip.removeNet(netpointer)
+    chip.remove_net(netpointer)
 
     # retry finding path
     path, x = astar(chip, chip.gates[start], chip.gates[end], restrictions=True, switch=False, up=True)
@@ -211,7 +211,7 @@ def remove_obstacle(chip, closedset, start, end, nets_removed):
             new_net.append(node.coordinate)
 
         # place net on the chip
-        chip.placeNet(chip.gates[start], chip.gates[end], new_net)
+        chip.place_net(chip.gates[start], chip.gates[end], new_net)
 
         length += len(path) + 1
 
@@ -240,6 +240,8 @@ def run_algorithm(width, height, layer, grid_file, netlist_file, no_path, sortin
     total_runs = 0
     indexer = 0
 
+    sorted_netlist = []
+
     # sorting method
     if sorting == 'on_connections':
         # sort netlist on amount of connections per gate from high to low
@@ -257,8 +259,6 @@ def run_algorithm(width, height, layer, grid_file, netlist_file, no_path, sortin
         # sort netlist on distance from long to short
         sorted_netlist = sort_on_distance(chip)[::-1]
 
-    netlist_length = len(sorted_netlist)
-
     # search path
     for start, end in sorted_netlist:
         # run A* algorithm
@@ -267,13 +267,9 @@ def run_algorithm(width, height, layer, grid_file, netlist_file, no_path, sortin
         # update return variable
         total_runs += 1
         indexer += 1
-        # for selective remove of obstacles to avoid infinite loop
-        if netlist_length - total_nets < 2 and no_path == 3:
-            no_path = 1
 
         # if no path is found
         if path == 'no path found':
-            Visualizer(chip).start()
             # remove random obstacles
             if no_path == 'random':
                 # get 3 random nets to be removed and return netlength
@@ -321,19 +317,18 @@ def run_algorithm(width, height, layer, grid_file, netlist_file, no_path, sortin
 
         # if path is found
         else:
-            print "hallo laila"
             # get coordinates from net
             new_net = []
             for node in path:
                 new_net.append(node.coordinate)
 
             # place net path on the chip
-            chip.placeNet(chip.gates[start], chip.gates[end], new_net)
+            chip.place_net(chip.gates[start], chip.gates[end], new_net)
 
             # update return variable
             total_nets += 1
             total_length += len(path) + 1
-    Visualizer(chip).start()
+
     # replace all nets
     chip, new_length = make_shorter(chip, total_length)
 
@@ -342,6 +337,6 @@ def run_algorithm(width, height, layer, grid_file, netlist_file, no_path, sortin
 
     # visualize chip
     if visualize:
-        Visualizer(chip).start()
+        Visualizer(chip)
 
     return total_runs, total_length, new_length, time_end - time_start
